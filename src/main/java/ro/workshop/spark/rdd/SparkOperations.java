@@ -64,7 +64,6 @@ public class SparkOperations {
                     }
                 });
 
-        //TODO - Complete checkin json read
         JavaRDD<Checkin> checkinsRDD = sparkContext.textFile(inputPathCheckin).map(
                 new Function<String, Checkin>() {
                     public Checkin call(String line) throws Exception {
@@ -73,7 +72,6 @@ public class SparkOperations {
                     }
                 });
 
-        //TODO - Complete reviews json read
         JavaRDD<Review> reviewsRDD =  sparkContext.textFile(inputPathReview).map(
                 new Function<String, Review>() {
                     public Review call(String line) throws Exception {
