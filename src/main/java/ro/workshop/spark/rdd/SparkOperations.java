@@ -143,7 +143,7 @@ public class SparkOperations {
         JavaPairRDD<Date, Integer> mostActiveMonths = registeredUsersPerMonth.mapToPair(a -> a.swap()).sortByKey(false).mapToPair(a -> a.swap());
 
         logger.info(" ==== Most Active Month ==== ");
-        logger.info(dateFormatYearMonth.format(mostActiveMonths.first()._1()) + " : " + mostActiveMonths.first()._2());
+        logger.info("");
 
         //2.5 Retrieve all the reviews for each business [grouped by business, so that is more easy to do exercises?]
         JavaPairRDD<String, Business> businessPair = businessRDD.mapToPair(business -> new Tuple2<>(business.getBusiness_id(), business));
