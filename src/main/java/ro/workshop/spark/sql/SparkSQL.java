@@ -56,7 +56,7 @@ public class SparkSQL {
 
         // 2.5 Retrieve all the reviews for each business name
         sqlContext.sql("select b.name, count(*) from business b join review r on b.business_id = r.business_id group by b.name").show();
-        // TODO - 2.5 Retrieve all the reviews of “Red White & Brew” business
+        // TODO - 2.5 Retrieve all the reviews of “Clancy's Pub” business
         // TODO - 2.5 Retrieve all the checkins for each business
 
 
