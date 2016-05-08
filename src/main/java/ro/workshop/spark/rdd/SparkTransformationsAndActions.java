@@ -1,11 +1,5 @@
 package ro.workshop.spark.rdd;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
 import com.google.gson.Gson;
@@ -15,7 +9,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
 import org.apache.spark.api.java.function.Function;
 import ro.workshop.spark.rdd.dto.Business;
 import ro.workshop.spark.rdd.dto.Checkin;
@@ -23,11 +16,16 @@ import ro.workshop.spark.rdd.dto.Review;
 import ro.workshop.spark.rdd.dto.User;
 import scala.Tuple2;
 
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
 
 /**
  * This is a Spark class that presents the main transformations and actions available in Spark.
- * The examples are made using the Yelp database.
- * Uncomment the lines and compleate them with the right example as the presentation slieds advence.
+ * Uncomment the lines and complete them with the right example.
  */
 
 public class SparkTransformationsAndActions {
@@ -35,25 +33,30 @@ public class SparkTransformationsAndActions {
     private final static Logger logger = Logger.getLogger(SparkTransformationsAndActions.class);
     private static final SimpleDateFormat dateFormatYearMonth = new SimpleDateFormat("yyyy-MM");
 
+    public interface SerializableComparator<T> extends Comparator<T>, Serializable {
+        @Override
+        int compare(T o1, T o2);
+    }
+
     public static void main(String[] args) throws Exception {
 
         /**
-         For development/testing, select only 2k lines from each file
-         linux: head -n 2000 f1.json > f1.json1
-         windows: more +2000 file (to try)
+         For development/testing, select only 10k lines from each file
+         linux: head -n 10000 f1.json > f1.json1
+         windows: more +10000 file (to try)
          */
-        String inputPathB = "data/?_business.json";
-        String inputPathC = "data/?_checkin.json";
-        String inputPathR = "data/?_review.json";
-        String inputPathU =  "data/?_user.json";
+        String inputPathBusiness = "data/s_business.json";
+        String inputPathCheckin = "data/s_checkin.json";
+        String inputPathReview = "data/s_review.json";
+        String inputPathUser =  "data/s_user.json";
 
 
-        SparkConf conf = new SparkConf().setAppName("SparkWorkshop").setMaster("local[*]");
+        SparkConf conf = new SparkConf().setAppName("SparkRDDs").setMaster("local[*]");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
 
         //1 - Create RDD and read the JSON file
-        JavaRDD<Business> businessRDD = sc.textFile(inputPathB).map(
+        JavaRDD<Business> businessRDD = sc.textFile(inputPathBusiness).map(
                 new Function<String, Business>() {
                     public Business call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -61,7 +64,7 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<Checkin> checkinsRDD = sc.textFile(inputPathC).map(
+        JavaRDD<Checkin> checkinsRDD = sc.textFile(inputPathCheckin).map(
                 new Function<String, Checkin>() {
                     public Checkin call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -69,7 +72,7 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<Review> reviewsRDD = sc.textFile(inputPathR).map(
+        JavaRDD<Review> reviewsRDD = sc.textFile(inputPathReview).map(
                 new Function<String, Review>() {
                     public Review call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -77,7 +80,7 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<User> usersRDD = sc.textFile(inputPathU).map(
+        JavaRDD<User> usersRDD = sc.textFile(inputPathUser).map(
                 new Function<String, User>() {
                     public User call(String line) throws Exception {
                         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM").create();
@@ -180,9 +183,4 @@ public class SparkTransformationsAndActions {
     }
 
 
-}
-
-interface SerializableComparator<T> extends Comparator<T>, Serializable {
-    @Override
-    int compare(T o1, T o2);
 }
