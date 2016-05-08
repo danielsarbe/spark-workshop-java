@@ -28,9 +28,9 @@ import java.util.List;
  * Uncomment the lines and complete them with the right example.
  */
 
-public class SparkTransformationsAndActions {
+public class SparkOperations {
 
-    private final static Logger logger = Logger.getLogger(SparkTransformationsAndActions.class);
+    private final static Logger logger = Logger.getLogger(SparkOperations.class);
     private static final SimpleDateFormat dateFormatYearMonth = new SimpleDateFormat("yyyy-MM");
 
     public interface SerializableComparator<T> extends Comparator<T>, Serializable {
@@ -52,11 +52,11 @@ public class SparkTransformationsAndActions {
 
 
         SparkConf conf = new SparkConf().setAppName("SparkRDDs").setMaster("local[*]");
-        JavaSparkContext sc = new JavaSparkContext(conf);
+        JavaSparkContext sparkContext = new JavaSparkContext(conf);
 
 
         //1 - Create RDD and read the JSON file
-        JavaRDD<Business> businessRDD = sc.textFile(inputPathBusiness).map(
+        JavaRDD<Business> businessRDD = sparkContext.textFile(inputPathBusiness).map(
                 new Function<String, Business>() {
                     public Business call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -64,7 +64,8 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<Checkin> checkinsRDD = sc.textFile(inputPathCheckin).map(
+        //TODO - Complete checkin json read
+        JavaRDD<Checkin> checkinsRDD = sparkContext.textFile(inputPathCheckin).map(
                 new Function<String, Checkin>() {
                     public Checkin call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -72,7 +73,8 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<Review> reviewsRDD = sc.textFile(inputPathReview).map(
+        //TODO - Complete reviews json read
+        JavaRDD<Review> reviewsRDD =  sparkContext.textFile(inputPathReview).map(
                 new Function<String, Review>() {
                     public Review call(String line) throws Exception {
                         Gson gson = new Gson();
@@ -80,7 +82,7 @@ public class SparkTransformationsAndActions {
                     }
                 });
 
-        JavaRDD<User> usersRDD = sc.textFile(inputPathUser).map(
+        JavaRDD<User> usersRDD = sparkContext.textFile(inputPathUser).map(
                 new Function<String, User>() {
                     public User call(String line) throws Exception {
                         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM").create();
@@ -92,12 +94,9 @@ public class SparkTransformationsAndActions {
         logger.info("No of business: <" + businessRDD.count() + ">");
 
         //TODO - 2.1 Print the number of records for the others RDDs
-        logger.info("No of checkins: <" + checkinsRDD.count() + ">");
-        logger.info("No of reviews: <" + reviewsRDD.count() + ">");
-        logger.info("No of users: <" + usersRDD.count() + ">");
 
 
-        //2.2 Find out the number of business from each city. ??? Print the first 30
+        //2.2 Find out the number of business from each city
         JavaPairRDD<String, Iterable<Business>> businessGroupedByCity = businessRDD.groupBy(x -> x.getCity().trim());
 
         //TODO - 2.2 Which are the top 10 cities based on number of businesses ?
@@ -105,7 +104,7 @@ public class SparkTransformationsAndActions {
         JavaPairRDD<String, Integer> citiesOrderByNumberOfBusiness = citiesRDD.mapToPair(a -> a.swap()).sortByKey(false).mapToPair(a -> a.swap());
 
 
-        List<Tuple2<String, Integer>> top10CitiesRDD = citiesOrderByNumberOfBusiness.take(10);
+        List<Tuple2<String, Integer>> top10CitiesRDD = null;
         logger.info(" ==== Top 10 cities ==== ");
         logger.info(top10CitiesRDD);
 
@@ -123,18 +122,11 @@ public class SparkTransformationsAndActions {
         logger.info(top10Days);
 
         //TODO - 2.3 What is the number of reviews for each star?
-        List reviewsByStar = reviewsRDD.groupBy(x -> x.getStars())
-                .mapToPair(review -> new Tuple2<>(review._1(), Iterators.size(review._2().iterator())))
-                .takeOrdered(10, (SerializableComparator<Tuple2<Integer, Integer>>) (o1, o2) -> o2._2().compareTo(o1._2()));
-
-        logger.info(" ==== Reviews stars ==== ");
-        logger.info(reviewsByStar);
-
+        //TODO - 2.3 Which are the top 10 days based on number of reviews?
+        //TODO - 2.3 What is the number of reviews for each star?
 
         //2.4 Find out the first registered users
         JavaRDD<User> usersSortedByDate = usersRDD.sortBy(new Function<User, Date>() {
-            private static final long serialVersionUID = 1L;
-
             @Override
             public Date call(User value) throws Exception {
                 return value.getYelping_since();
@@ -144,7 +136,7 @@ public class SparkTransformationsAndActions {
         logger.info(" ==== Yelping since ==== ");
         logger.info(usersSortedByDate.first());
 
-        //TODO : In which months was registered the most users ?
+        //TODO - 2.4 In which months was registered the most users ?
         JavaPairRDD<Date, Integer> registeredUsersPerMonth = usersSortedByDate.mapToPair(w -> new Tuple2<Date, Integer>(w.getYelping_since(), 1)).
                 reduceByKey((x, y) -> x + y);
 
@@ -159,25 +151,11 @@ public class SparkTransformationsAndActions {
         JavaPairRDD<String, Tuple2<Business, Optional<Review>>> joinedBusinessAndReviews = businessPair.leftOuterJoin(reviewsPair);
         logger.info(joinedBusinessAndReviews.count());
 
-        //TODO : Retrieve all the reviews of “Red White & Brew” business
-        //Var1
-        JavaPairRDD<String, Tuple2<Business, Optional<Review>>> filteredReviews = joinedBusinessAndReviews.filter((x) -> x._2()._1().getName().equals("Clancy's Pub"));
-        logger.info("filteredReviews:<" + filteredReviews.collect() + ">");
-        //Var2
-        String businessId = businessRDD.filter((x) -> x.getName().equals("Clancy's Pub")).collect().get(0).getBusiness_id();
-        logger.info("businessId:<" + businessId + ">");
-        JavaPairRDD<String, Tuple2<Business, Optional<Review>>> filteredReviews2 = joinedBusinessAndReviews.filter((x) -> x._1().equals(businessId));
-        logger.info("filteredReviews2:<" + filteredReviews2.collect() + ">");
+        //TODO - 2.5 Retrieve all the reviews of “Clancy's Pub” business
+        //TODO - 2.5 Retrieve all the checkins for each business
 
-        //joinedBusinessAndReviews.take(10).saveAsTextFile(outputPath);
 
-        //TODO : Retrieve all the checkins for each business
-        JavaPairRDD<String, Checkin> checkinsPair = checkinsRDD.mapToPair(checkin -> new Tuple2<>(checkin.getBusiness_id(), checkin));
-        JavaPairRDD<String, Tuple2<Business, Optional<Checkin>>> joinedBusinessAndCheckins = businessPair.leftOuterJoin(checkinsPair);
-        logger.info(" ==== No of joined checkins ==== ");
-        logger.info(joinedBusinessAndCheckins.count());
-
-        sc.close();
+        sparkContext.close();
 
 
     }
