@@ -40,10 +40,11 @@ public class SparkML {
             this.features = features;
         }
     }
-    private static void geoClusterBusinesses(SQLContext sqlContext) {
-        DataFrame places = sqlContext.sql("select business_id as id, latitude, longitude from businesses");
 
-        JavaRDD<Entity> rdd = places.toJavaRDD().map(row -> new Entity(row.getString(0), Vectors.dense(row.getDouble(1), row.getDouble(2))));
+    private static void behaviourClusterUsers(SQLContext sqlContext) {
+        DataFrame places = sqlContext.sql("select user_id as id, review_count from user");
+
+        JavaRDD<Entity> rdd = places.toJavaRDD().map(row -> new Entity(row.getString(0), Vectors.dense(row.getLong(1))));
 
         DataFrame dataFrame = sqlContext.createDataFrame(rdd, Entity.class);
 
@@ -65,15 +66,28 @@ public class SparkML {
 
     }
 
+    private static void geoClusterBusinesses(SQLContext sqlContext) {
+        //TODO - Implement KMeans for latitude, longitude
+
+    }
+
     public static void main(String[] args) {
         SparkConf conf = new SparkConf().setAppName("JavaKMeansExample").setMaster("local[*]");
         JavaSparkContext jsc = new JavaSparkContext(conf);
         SQLContext sqlContext = new SQLContext(jsc);
 
+        String inputPathUser = "data/s_user.json";
         String inputPathBusiness = "data/s_business.json";
-        DataFrame inputBusiness = sqlContext.read().json(inputPathBusiness);
-        inputBusiness.registerTempTable("businesses");
 
+        DataFrame inputUser = sqlContext.read().json(inputPathUser);
+        DataFrame inputBusiness = sqlContext.read().json(inputPathBusiness);
+
+        inputUser.registerTempTable("user");
+        inputBusiness.registerTempTable("business");
+
+        behaviourClusterUsers(sqlContext);
+
+        //TODO - Implement KMeans for latitude, longitude
         geoClusterBusinesses(sqlContext);
 
         jsc.stop();
