@@ -43,7 +43,7 @@ public class SparkOperations {
         /**
          For development/testing, select only 10k lines from each file
          Mac/Linux: head -n 10000 f1.json > s_f1.json
-         Windows(using Get-Content command): gc -TotalCount 100000 f1.json > s_f1.json
+         Windows(using Get-Content command): gc -TotalCount 10000 f1.json > s_f1.json
          */
 
         String inputPathBusiness = "data/s_business.json";
