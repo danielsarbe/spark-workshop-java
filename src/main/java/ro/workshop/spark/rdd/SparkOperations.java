@@ -53,8 +53,6 @@ public class SparkOperations {
                System.setProperty("hadoop.home.dir", "C:\\tmp\\");
          */
 
-        System.setProperty("hadoop.home.dir", "C:\\tmp\\");
-
         String inputPathBusiness = "data/s_business.json";
         String inputPathCheckin = "data/s_checkin.json";
         String inputPathReview = "data/s_review.json";
