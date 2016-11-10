@@ -41,10 +41,19 @@ public class SparkOperations {
     public static void main(String[] args) throws Exception {
 
         /**
-         For development/testing, select only 10k lines from each file
-         Mac/Linux: head -n 10000 f1.json > s_f1.json
-         Windows(using Get-Content command): gc -TotalCount 10000 f1.json > s_f1.json
+         1. For development/testing, select only 10k lines from each file
+            - Mac/Linux: head -n 10000 f1.json > s_f1.json
+            - Windows PowerShell (using Get-Content command):
+               gc -TotalCount 10000 .\yelp_academic_dataset_business.json | set-content s_business.json -encoding UTF8
+            - Or just download them from: https://www.dropbox.com/sh/ef4cjj5yysuyrbl/AADBcH-t_g-oLBJ5QEdILa4Va?dl=0
+
+         2. On Windows to solve the winutils.exe warning use the following link:
+            - http://teknosrc.com/spark-error-java-io-ioexception-could-not-locate-executable-null-bin-winutils-exe-hadoop-binaries/
+            then de-comment:
+               System.setProperty("hadoop.home.dir", "C:\\tmp\\");
          */
+
+        System.setProperty("hadoop.home.dir", "C:\\tmp\\");
 
         String inputPathBusiness = "data/s_business.json";
         String inputPathCheckin = "data/s_checkin.json";
