@@ -11,42 +11,15 @@ import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 
-import java.io.Serializable;
 
-public class SparkML {
-
-    public static class  Entity implements Serializable {
-        private String id;
-        private Vector features;
-
-        public Entity(String id, Vector features) {
-            this.id = id;
-            this.features = features;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public Vector getFeatures() {
-            return features;
-        }
-
-        public void setFeatures(Vector features) {
-            this.features = features;
-        }
-    }
+public class SparkMLKMeans {
 
     private static void behaviourClusterUsers(SQLContext sqlContext) {
         DataFrame places = sqlContext.sql("select user_id as id, review_count from user");
 
-        JavaRDD<Entity> rdd = places.toJavaRDD().map(row -> new Entity(row.getString(0), Vectors.dense(row.getLong(1))));
+        JavaRDD<MLEntity> rdd = places.toJavaRDD().map(row -> new MLEntity(row.getString(0), Vectors.dense(row.getLong(1))));
 
-        DataFrame dataFrame = sqlContext.createDataFrame(rdd, Entity.class);
+        DataFrame dataFrame = sqlContext.createDataFrame(rdd, MLEntity.class);
 
         KMeans kmeans = new KMeans().setK(10).
                 setMaxIter(20).
