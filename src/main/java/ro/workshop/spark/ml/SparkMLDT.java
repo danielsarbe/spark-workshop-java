@@ -24,7 +24,7 @@ public class SparkMLDT {
 
     public static void main(String[] args) {
         SparkConf conf = new SparkConf()
-                .setAppName("JavaKMeansExample")
+                .setAppName("SparkML")
                 .setMaster("local[*]");
         JavaSparkContext jsc = new JavaSparkContext(conf);
         SQLContext sqlContext = new SQLContext(jsc);
